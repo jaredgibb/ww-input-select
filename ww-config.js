@@ -212,6 +212,7 @@ export default {
                     'closeOnClickOutside',
                     'manualTrigger',
                     'selectOnClick',
+                    'sortSelectedToTop',
                     'virtualScroll',
                     'virtualScrollBuffer',
                     'virtualScrollMinItemSize',
@@ -1073,6 +1074,24 @@ export default {
             },
             propertyHelp: {
                 tooltip: 'Whether the option should be automatically selected when clicked.',
+            },
+            /* wwEditor:end */
+        },
+        sortSelectedToTop: {
+            label: { en: 'Sort selected to top' },
+            type: 'OnOff',
+            states: true,
+            bindable: true,
+            responsive: true,
+            defaultValue: false,
+            section: 'settings',
+            /* wwEditor:start */
+            bindingValidation: {
+                type: 'boolean',
+                tooltip: 'Whether selected items should appear at the top of the options list: `true | false`',
+            },
+            propertyHelp: {
+                tooltip: 'When enabled, selected options will be sorted to the top of the list.',
             },
             /* wwEditor:end */
         },

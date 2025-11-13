@@ -99,6 +99,8 @@ export default {
         const searchState = inject('_wwSelect:searchState', ref(null));
         const { updateSearch } = inject('_wwSelect:useSearch', {});
         const registerOptionProperties = inject('_wwSelect:registerOptionProperties', () => {});
+        const selectedValue = inject('_wwSelect:value', ref(null));
+        const mappingValue = inject('_wwSelect:mappingValue', ref(null));
         const virtualScrollMinItemSize = computed(() => props.content.virtualScrollMinItemSize);
         const virtualScrollBuffer = computed(() => props.content.virtualScrollBuffer);
         const heavyMode = computed(() => props.content.heavyMode);
@@ -156,8 +158,64 @@ export default {
         });
 
         const filteredOptions = computed(() => {
-            if (!searchState.value || !searchState.value.value) return options.value;
-            let filtered = memoizedFilter(options.value, searchState.value.value);
+            let filtered = options.value;
+            
+            // Apply search filter if active
+            if (searchState.value && searchState.value.value) {
+                filtered = memoizedFilter(options.value, searchState.value.value);
+            }
+            
+            // Apply sorting if sortSelectedToTop is enabled
+            if (props.content.sortSelectedToTop && selectedValue.value) {
+                filtered = [...filtered].sort((a, b) => {
+                    // Get the value for each option
+                    const aValue = typeof a === 'object' && a !== null 
+                        ? wwLib.resolveObjectPropertyPath(a, mappingValue.value?.code || 'value')
+                        : a;
+                    const bValue = typeof b === 'object' && b !== null 
+                        ? wwLib.resolveObjectPropertyPath(b, mappingValue.value?.code || 'value')
+                        : b;
+                    
+                    // Check if each option is selected
+                    const aIsSelected = Array.isArray(selectedValue.value)
+                        ? selectedValue.value.some(v => {
+                            try {
+                                return JSON.stringify(v) === JSON.stringify(aValue);
+                            } catch {
+                                return v === aValue;
+                            }
+                        })
+                        : (() => {
+                            try {
+                                return JSON.stringify(selectedValue.value) === JSON.stringify(aValue);
+                            } catch {
+                                return selectedValue.value === aValue;
+                            }
+                        })();
+                    
+                    const bIsSelected = Array.isArray(selectedValue.value)
+                        ? selectedValue.value.some(v => {
+                            try {
+                                return JSON.stringify(v) === JSON.stringify(bValue);
+                            } catch {
+                                return v === bValue;
+                            }
+                        })
+                        : (() => {
+                            try {
+                                return JSON.stringify(selectedValue.value) === JSON.stringify(bValue);
+                            } catch {
+                                return selectedValue.value === bValue;
+                            }
+                        })();
+                    
+                    // Sort selected items to top
+                    if (aIsSelected && !bIsSelected) return -1;
+                    if (!aIsSelected && bIsSelected) return 1;
+                    return 0; // Keep original order for items with same selection status
+                });
+            }
+            
             return filtered;
         });
 

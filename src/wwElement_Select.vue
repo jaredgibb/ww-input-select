@@ -193,6 +193,11 @@ export default {
         const showSearch = computed(() => props.content.showSearch);
         const allowScrollingWhenOpen = computed(() => props.content.allowScrollingWhenOpen);
 
+        // Debug: Watch isOpen changes
+        watch(isOpen, (newVal, oldVal) => {
+            console.log('[Select] isOpen changed:', { from: oldVal, to: newVal, stack: new Error().stack });
+        });
+
         // Styles
         const syncFloating = () => {
             if (!triggerElement?.value) return;

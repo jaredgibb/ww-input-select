@@ -107,17 +107,6 @@ export default {
         const heavyMode = computed(() => props.content.heavyMode);
         const itemSize = computed(() => props.content.itemSize);
 
-        console.log('[OptionsList] Component setup, sortSelectedToTop:', props.content.sortSelectedToTop);
-
-        // Watch selectedValue changes
-        watch(selectedValue, (newVal, oldVal) => {
-            console.log('[OptionsList] selectedValue changed:', { 
-                old: oldVal, 
-                new: newVal,
-                sortEnabled: props.content.sortSelectedToTop 
-            });
-        }, { deep: true });
-
         const emptyStateText = computed(() => wwLib.wwLang.getText(props.content.emptyStateText));
 
         const options = computed(() => {
@@ -172,39 +161,26 @@ export default {
         const { resolveMappingFormula } = wwLib.wwFormula.useFormula();
 
         const filteredOptions = computed(() => {
-            console.log('[OptionsList] filteredOptions computing...', {
-                sortEnabled: props.content.sortSelectedToTop,
-                hasSelectedValue: selectedValue.value != null,
-                selectedValue: selectedValue.value,
-                optionsCount: options.value?.length
-            });
-            
             let filtered = options.value;
             
             // Apply search filter if active
             if (searchState.value && searchState.value.value) {
-                console.log('[OptionsList] Applying search filter');
                 filtered = memoizedFilter(options.value, searchState.value.value);
             }
             
             // Apply sorting if sortSelectedToTop is enabled
             if (props.content.sortSelectedToTop && selectedValue.value != null) {
-                console.log('[OptionsList] Starting sort operation');
                 try {
                     // Create a map of option values to avoid recalculating during sort
                     const optionValueMap = new Map();
-                    filtered.forEach((option, idx) => {
+                    filtered.forEach((option) => {
                         const isPrimitive = typeof option !== 'object' || option === null;
                         const value = isPrimitive 
                             ? option 
                             : resolveMappingFormula(toValue(mappingValue.value), option) ?? option;
                         optionValueMap.set(option, value);
-                        if (idx < 3) {
-                            console.log(`[OptionsList] Option ${idx} value:`, value);
-                        }
                     });
                     
-                    console.log('[OptionsList] Starting array sort');
                     filtered = [...filtered].sort((a, b) => {
                         const aValue = optionValueMap.get(a);
                         const bValue = optionValueMap.get(b);
@@ -227,7 +203,6 @@ export default {
                         if (!aIsSelected && bIsSelected) return 1;
                         return 0; // Keep original order for items with same selection status
                     });
-                    console.log('[OptionsList] Sort complete');
                 } catch (error) {
                     console.error('[OptionsList] Error during sorting:', error);
                     // Return unsorted on error
@@ -235,13 +210,11 @@ export default {
                 }
             }
             
-            console.log('[OptionsList] filteredOptions complete, count:', filtered.length);
             return filtered;
         });
 
         const dynamicScrollerItems = computed(() => {
-            console.log('[OptionsList] dynamicScrollerItems computing, count:', filteredOptions.value.length);
-            const items = filteredOptions.value.map((item, index) => {
+            return filteredOptions.value.map((item, index) => {
                 // Handle primitive values properly - don't spread them as they become indexed objects
                 const isPrimitive = typeof item !== 'object' || item === null;
                 if (isPrimitive) {
@@ -264,8 +237,6 @@ export default {
                     }
                 }
             });
-            console.log('[OptionsList] dynamicScrollerItems complete, first 3 IDs:', items.slice(0, 3).map(i => i.id));
-            return items;
         });
 
         // Watch for search changes only, not sorting changes
@@ -276,7 +247,6 @@ export default {
         });
 
         watch([searchState, searchFilteredCount], () => {
-            console.log('[OptionsList] searchState watcher triggered');
             if (updateSearch && searchState.value && searchState.value.value) {
                 const searchMatches = memoizedFilter(options.value, searchState.value.value);
                 updateSearch({ ...searchState.value, searchMatches });

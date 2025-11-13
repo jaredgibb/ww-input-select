@@ -314,6 +314,7 @@ export default {
         };
 
         const toggleValueAccessibility = value => {
+            console.log('[Select] toggleValueAccessibility called, value:', value, 'closeOnSelect:', props.content.closeOnSelect);
             // Don't process empty values
             if (value === '' || value == null || value === undefined) {
                 return;
@@ -465,6 +466,7 @@ export default {
         }
 
         function closeDropdown() {
+            console.log('[Select] closeDropdown called, shouldClose:', shouldCloseDropdown.value, 'stack:', new Error().stack);
             if (!shouldCloseDropdown.value) return;
 
             resetSearch();

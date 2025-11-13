@@ -102,6 +102,7 @@ export default {
         const registerOptionProperties = inject('_wwSelect:registerOptionProperties', () => {});
         const selectedValue = inject('_wwSelect:value', ref(null));
         const mappingValue = inject('_wwSelect:mappingValue', ref(null));
+        const isSorting = inject('_wwSelect:isSorting', ref(false));
         const virtualScrollMinItemSize = computed(() => props.content.virtualScrollMinItemSize);
         const virtualScrollBuffer = computed(() => props.content.virtualScrollBuffer);
         const heavyMode = computed(() => props.content.heavyMode);
@@ -171,6 +172,8 @@ export default {
             // Apply sorting if sortSelectedToTop is enabled
             if (props.content.sortSelectedToTop && selectedValue.value != null) {
                 try {
+                    isSorting.value = true;
+                    
                     // Create a map of option values to avoid recalculating during sort
                     const optionValueMap = new Map();
                     filtered.forEach((option) => {
@@ -203,8 +206,14 @@ export default {
                         if (!aIsSelected && bIsSelected) return 1;
                         return 0; // Keep original order for items with same selection status
                     });
+                    
+                    // Reset the flag after a brief delay to allow DOM to update
+                    setTimeout(() => {
+                        isSorting.value = false;
+                    }, 100);
                 } catch (error) {
                     console.error('[OptionsList] Error during sorting:', error);
+                    isSorting.value = false;
                     // Return unsorted on error
                     filtered = [...filtered];
                 }

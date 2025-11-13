@@ -184,6 +184,7 @@ export default {
         const triggerWidth = ref(0);
         const triggerHeight = ref(0);
         const shouldCloseDropdown = ref(true);
+        const isSorting = ref(false);
         const optionType = computed(() => props.content.optionType || 'text');
         const mappingLabel = computed(() => props.content.mappingLabel);
         const mappingIcon = computed(() => props.content.mappingIcon);
@@ -514,8 +515,9 @@ export default {
             const shouldClose = closeOnClickOutside.value &&
                 isOpen.value &&
                 !triggerElement.value.contains(event.target) &&
-                !dropdownElement.value.contains(event.target) &&
+                !dropdownElement.value?.contains(event.target) &&
                 !isEditing.value &&
+                !isSorting.value &&
                 Date.now() > lastTriggeredComponentAction.value + 400;
             
             console.log('[Select] handleClickOutside:', {
@@ -524,6 +526,7 @@ export default {
                 isOpen: isOpen.value,
                 inTrigger: triggerElement.value?.contains(event.target),
                 inDropdown: dropdownElement.value?.contains(event.target),
+                isSorting: isSorting.value,
                 target: event.target,
                 dropdownElement: dropdownElement.value
             });
@@ -972,6 +975,7 @@ export default {
         provide('_wwSelect:isDisabled', isDisabled);
         provide('_wwSelect:isReadonly', isReadonly);
         provide('_wwSelect:canUnselect', canUnselect);
+        provide('_wwSelect:isSorting', isSorting);
         provide('_wwSelect:searchState', searchState);
         provide('_wwSelect:optionProperties', optionProperties);
         provide('_wwSelect:updateValue', updateValue);

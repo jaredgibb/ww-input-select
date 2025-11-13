@@ -160,18 +160,6 @@ export default {
 
         const { resolveMappingFormula } = wwLib.wwFormula.useFormula();
 
-        // Helper function to extract value from an option item
-        const getOptionValue = (option) => {
-            // Handle primitive values (strings, numbers, etc.)
-            const isPrimitive = typeof option !== 'object' || option === null;
-            if (isPrimitive) {
-                return option;
-            }
-            
-            // For objects, use the mapping formula
-            return resolveMappingFormula(toValue(mappingValue.value), option) ?? option;
-        };
-
         const filteredOptions = computed(() => {
             let filtered = options.value;
             
@@ -182,9 +170,19 @@ export default {
             
             // Apply sorting if sortSelectedToTop is enabled
             if (props.content.sortSelectedToTop && selectedValue.value != null) {
+                // Create a map of option values to avoid recalculating during sort
+                const optionValueMap = new Map();
+                filtered.forEach((option) => {
+                    const isPrimitive = typeof option !== 'object' || option === null;
+                    const value = isPrimitive 
+                        ? option 
+                        : resolveMappingFormula(toValue(mappingValue.value), option) ?? option;
+                    optionValueMap.set(option, value);
+                });
+                
                 filtered = [...filtered].sort((a, b) => {
-                    const aValue = getOptionValue(a);
-                    const bValue = getOptionValue(b);
+                    const aValue = optionValueMap.get(a);
+                    const bValue = optionValueMap.get(b);
                     
                     // Check if each option is selected
                     let aIsSelected, bIsSelected;
@@ -214,11 +212,23 @@ export default {
                 // Handle primitive values properly - don't spread them as they become indexed objects
                 const isPrimitive = typeof item !== 'object' || item === null;
                 if (isPrimitive) {
-                    // For primitives, create a simple object wrapper
-                    return { value: item, id: `id_${index}` };
+                    // For primitives, create a simple object wrapper with stable ID based on value
+                    const stableId = `primitive_${JSON.stringify(item)}`;
+                    return { value: item, id: stableId };
                 } else {
-                    // For objects, use the existing spread logic
-                    return { ...item, id: item.id ?? `id_${index}` };
+                    // For objects, use existing id or create stable ID based on the object's value
+                    const existingId = item.id;
+                    if (existingId != null) {
+                        return { ...item, id: existingId };
+                    }
+                    // Create stable ID based on object content to survive re-sorting
+                    try {
+                        const stableId = `obj_${JSON.stringify(item)}`;
+                        return { ...item, id: stableId };
+                    } catch {
+                        // Fallback to index-based if JSON.stringify fails (circular refs, etc.)
+                        return { ...item, id: `id_${index}` };
+                    }
                 }
             });
         });

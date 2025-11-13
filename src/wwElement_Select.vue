@@ -203,6 +203,19 @@ export default {
             console.log('[Select] sortSelectedToTop changed:', { from: oldVal, to: newVal });
         });
 
+        // Debug: Watch props.content reference
+        watch(() => props.content, (newVal, oldVal) => {
+            console.log('[Select] props.content reference changed:', { 
+                same: newVal === oldVal,
+                initialState: newVal.initialState 
+            });
+        });
+
+        // Debug: Watch initialState
+        watch(initialState, (newVal, oldVal) => {
+            console.log('[Select] initialState changed:', { from: oldVal, to: newVal });
+        });
+
         // Styles
         const syncFloating = () => {
             if (!triggerElement?.value) return;

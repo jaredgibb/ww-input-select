@@ -198,6 +198,11 @@ export default {
             console.log('[Select] isOpen changed:', { from: oldVal, to: newVal, stack: new Error().stack });
         });
 
+        // Debug: Watch sortSelectedToTop prop
+        watch(() => props.content.sortSelectedToTop, (newVal, oldVal) => {
+            console.log('[Select] sortSelectedToTop changed:', { from: oldVal, to: newVal });
+        });
+
         // Styles
         const syncFloating = () => {
             if (!triggerElement?.value) return;

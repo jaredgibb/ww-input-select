@@ -52,9 +52,10 @@
 
 <script>
 import InputSelectOption from './wwElement_Option.vue';
-import { ref, inject, computed, watch } from 'vue';
+import { ref, inject, computed, watch, toValue } from 'vue';
 import { DynamicScroller, DynamicScrollerItem, RecycleScroller } from 'vue-virtual-scroller';
 import { useMemoize } from '@vueuse/core';
+import { areValuesEqual } from './utils';
 /* wwEditor:start */
 import useEditorHint from './editor/useEditorHint';
 /* wwEditor:end */
@@ -157,6 +158,20 @@ export default {
             });
         });
 
+        const { resolveMappingFormula } = wwLib.wwFormula.useFormula();
+
+        // Helper function to extract value from an option item
+        const getOptionValue = (option) => {
+            // Handle primitive values (strings, numbers, etc.)
+            const isPrimitive = typeof option !== 'object' || option === null;
+            if (isPrimitive) {
+                return option;
+            }
+            
+            // For objects, use the mapping formula
+            return resolveMappingFormula(toValue(mappingValue.value), option) ?? option;
+        };
+
         const filteredOptions = computed(() => {
             let filtered = options.value;
             
@@ -166,48 +181,23 @@ export default {
             }
             
             // Apply sorting if sortSelectedToTop is enabled
-            if (props.content.sortSelectedToTop && selectedValue.value) {
+            if (props.content.sortSelectedToTop && selectedValue.value != null) {
                 filtered = [...filtered].sort((a, b) => {
-                    // Get the value for each option
-                    const aValue = typeof a === 'object' && a !== null 
-                        ? wwLib.resolveObjectPropertyPath(a, mappingValue.value?.code || 'value')
-                        : a;
-                    const bValue = typeof b === 'object' && b !== null 
-                        ? wwLib.resolveObjectPropertyPath(b, mappingValue.value?.code || 'value')
-                        : b;
+                    const aValue = getOptionValue(a);
+                    const bValue = getOptionValue(b);
                     
                     // Check if each option is selected
-                    const aIsSelected = Array.isArray(selectedValue.value)
-                        ? selectedValue.value.some(v => {
-                            try {
-                                return JSON.stringify(v) === JSON.stringify(aValue);
-                            } catch {
-                                return v === aValue;
-                            }
-                        })
-                        : (() => {
-                            try {
-                                return JSON.stringify(selectedValue.value) === JSON.stringify(aValue);
-                            } catch {
-                                return selectedValue.value === aValue;
-                            }
-                        })();
+                    let aIsSelected, bIsSelected;
                     
-                    const bIsSelected = Array.isArray(selectedValue.value)
-                        ? selectedValue.value.some(v => {
-                            try {
-                                return JSON.stringify(v) === JSON.stringify(bValue);
-                            } catch {
-                                return v === bValue;
-                            }
-                        })
-                        : (() => {
-                            try {
-                                return JSON.stringify(selectedValue.value) === JSON.stringify(bValue);
-                            } catch {
-                                return selectedValue.value === bValue;
-                            }
-                        })();
+                    if (Array.isArray(selectedValue.value)) {
+                        // Multiple selection mode
+                        aIsSelected = selectedValue.value.some(v => areValuesEqual(v, aValue));
+                        bIsSelected = selectedValue.value.some(v => areValuesEqual(v, bValue));
+                    } else {
+                        // Single selection mode
+                        aIsSelected = areValuesEqual(selectedValue.value, aValue);
+                        bIsSelected = areValuesEqual(selectedValue.value, bValue);
+                    }
                     
                     // Sort selected items to top
                     if (aIsSelected && !bIsSelected) return -1;

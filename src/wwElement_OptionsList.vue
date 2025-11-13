@@ -268,13 +268,20 @@ export default {
             return items;
         });
 
-        watch(filteredOptions, () => {
-            console.log('[OptionsList] filteredOptions watcher triggered');
-            if (updateSearch) {
-                const searchMatches = searchState.value && searchState.value.value ? filteredOptions.value : [];
+        // Watch for search changes only, not sorting changes
+        // We need to track the actual filtering, not the sorting
+        const searchFilteredCount = computed(() => {
+            if (!searchState.value || !searchState.value.value) return options.value.length;
+            return memoizedFilter(options.value, searchState.value.value).length;
+        });
+
+        watch([searchState, searchFilteredCount], () => {
+            console.log('[OptionsList] searchState watcher triggered');
+            if (updateSearch && searchState.value && searchState.value.value) {
+                const searchMatches = memoizedFilter(options.value, searchState.value.value);
                 updateSearch({ ...searchState.value, searchMatches });
             }
-        });
+        }, { deep: true });
 
         // Styles
         const scrollerStyle = computed(() => {

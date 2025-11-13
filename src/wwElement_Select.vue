@@ -486,14 +486,24 @@ export default {
         }
 
         function handleClickOutside(event) {
-            if (
-                closeOnClickOutside.value &&
+            const shouldClose = closeOnClickOutside.value &&
                 isOpen.value &&
                 !triggerElement.value.contains(event.target) &&
                 !dropdownElement.value.contains(event.target) &&
                 !isEditing.value &&
-                Date.now() > lastTriggeredComponentAction.value + 400
-            ) {
+                Date.now() > lastTriggeredComponentAction.value + 400;
+            
+            console.log('[Select] handleClickOutside:', {
+                shouldClose,
+                closeOnClickOutside: closeOnClickOutside.value,
+                isOpen: isOpen.value,
+                inTrigger: triggerElement.value?.contains(event.target),
+                inDropdown: dropdownElement.value?.contains(event.target),
+                target: event.target,
+                dropdownElement: dropdownElement.value
+            });
+            
+            if (shouldClose) {
                 closeDropdown();
             }
         }

@@ -107,6 +107,17 @@ export default {
         const heavyMode = computed(() => props.content.heavyMode);
         const itemSize = computed(() => props.content.itemSize);
 
+        console.log('[OptionsList] Component setup, sortSelectedToTop:', props.content.sortSelectedToTop);
+
+        // Watch selectedValue changes
+        watch(selectedValue, (newVal, oldVal) => {
+            console.log('[OptionsList] selectedValue changed:', { 
+                old: oldVal, 
+                new: newVal,
+                sortEnabled: props.content.sortSelectedToTop 
+            });
+        }, { deep: true });
+
         const emptyStateText = computed(() => wwLib.wwLang.getText(props.content.emptyStateText));
 
         const options = computed(() => {
@@ -161,54 +172,76 @@ export default {
         const { resolveMappingFormula } = wwLib.wwFormula.useFormula();
 
         const filteredOptions = computed(() => {
+            console.log('[OptionsList] filteredOptions computing...', {
+                sortEnabled: props.content.sortSelectedToTop,
+                hasSelectedValue: selectedValue.value != null,
+                selectedValue: selectedValue.value,
+                optionsCount: options.value?.length
+            });
+            
             let filtered = options.value;
             
             // Apply search filter if active
             if (searchState.value && searchState.value.value) {
+                console.log('[OptionsList] Applying search filter');
                 filtered = memoizedFilter(options.value, searchState.value.value);
             }
             
             // Apply sorting if sortSelectedToTop is enabled
             if (props.content.sortSelectedToTop && selectedValue.value != null) {
-                // Create a map of option values to avoid recalculating during sort
-                const optionValueMap = new Map();
-                filtered.forEach((option) => {
-                    const isPrimitive = typeof option !== 'object' || option === null;
-                    const value = isPrimitive 
-                        ? option 
-                        : resolveMappingFormula(toValue(mappingValue.value), option) ?? option;
-                    optionValueMap.set(option, value);
-                });
-                
-                filtered = [...filtered].sort((a, b) => {
-                    const aValue = optionValueMap.get(a);
-                    const bValue = optionValueMap.get(b);
+                console.log('[OptionsList] Starting sort operation');
+                try {
+                    // Create a map of option values to avoid recalculating during sort
+                    const optionValueMap = new Map();
+                    filtered.forEach((option, idx) => {
+                        const isPrimitive = typeof option !== 'object' || option === null;
+                        const value = isPrimitive 
+                            ? option 
+                            : resolveMappingFormula(toValue(mappingValue.value), option) ?? option;
+                        optionValueMap.set(option, value);
+                        if (idx < 3) {
+                            console.log(`[OptionsList] Option ${idx} value:`, value);
+                        }
+                    });
                     
-                    // Check if each option is selected
-                    let aIsSelected, bIsSelected;
-                    
-                    if (Array.isArray(selectedValue.value)) {
-                        // Multiple selection mode
-                        aIsSelected = selectedValue.value.some(v => areValuesEqual(v, aValue));
-                        bIsSelected = selectedValue.value.some(v => areValuesEqual(v, bValue));
-                    } else {
-                        // Single selection mode
-                        aIsSelected = areValuesEqual(selectedValue.value, aValue);
-                        bIsSelected = areValuesEqual(selectedValue.value, bValue);
-                    }
-                    
-                    // Sort selected items to top
-                    if (aIsSelected && !bIsSelected) return -1;
-                    if (!aIsSelected && bIsSelected) return 1;
-                    return 0; // Keep original order for items with same selection status
-                });
+                    console.log('[OptionsList] Starting array sort');
+                    filtered = [...filtered].sort((a, b) => {
+                        const aValue = optionValueMap.get(a);
+                        const bValue = optionValueMap.get(b);
+                        
+                        // Check if each option is selected
+                        let aIsSelected, bIsSelected;
+                        
+                        if (Array.isArray(selectedValue.value)) {
+                            // Multiple selection mode
+                            aIsSelected = selectedValue.value.some(v => areValuesEqual(v, aValue));
+                            bIsSelected = selectedValue.value.some(v => areValuesEqual(v, bValue));
+                        } else {
+                            // Single selection mode
+                            aIsSelected = areValuesEqual(selectedValue.value, aValue);
+                            bIsSelected = areValuesEqual(selectedValue.value, bValue);
+                        }
+                        
+                        // Sort selected items to top
+                        if (aIsSelected && !bIsSelected) return -1;
+                        if (!aIsSelected && bIsSelected) return 1;
+                        return 0; // Keep original order for items with same selection status
+                    });
+                    console.log('[OptionsList] Sort complete');
+                } catch (error) {
+                    console.error('[OptionsList] Error during sorting:', error);
+                    // Return unsorted on error
+                    filtered = [...filtered];
+                }
             }
             
+            console.log('[OptionsList] filteredOptions complete, count:', filtered.length);
             return filtered;
         });
 
         const dynamicScrollerItems = computed(() => {
-            return filteredOptions.value.map((item, index) => {
+            console.log('[OptionsList] dynamicScrollerItems computing, count:', filteredOptions.value.length);
+            const items = filteredOptions.value.map((item, index) => {
                 // Handle primitive values properly - don't spread them as they become indexed objects
                 const isPrimitive = typeof item !== 'object' || item === null;
                 if (isPrimitive) {
@@ -231,9 +264,12 @@ export default {
                     }
                 }
             });
+            console.log('[OptionsList] dynamicScrollerItems complete, first 3 IDs:', items.slice(0, 3).map(i => i.id));
+            return items;
         });
 
         watch(filteredOptions, () => {
+            console.log('[OptionsList] filteredOptions watcher triggered');
             if (updateSearch) {
                 const searchMatches = searchState.value && searchState.value.value ? filteredOptions.value : [];
                 updateSearch({ ...searchState.value, searchMatches });

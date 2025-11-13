@@ -194,6 +194,8 @@ export default {
                     'searchPlaceholder',
                     'initialState',
                     'selectType',
+                    'displayMode',
+                    'displayText',
                     'selectTypeWarning',
                 ],
             },
@@ -520,6 +522,55 @@ export default {
                 tooltip: 'Define whether users can select one or multiple options.\nPossible values: single, multiple',
             },
             /* wwEditor:end */
+        },
+        displayMode: {
+            label: 'Display mode',
+            type: 'TextSelect',
+            options: {
+                options: [
+                    {
+                        value: 'chips',
+                        label: 'Display chips',
+                    },
+                    {
+                        value: 'count',
+                        label: 'Display count',
+                    },
+                ],
+            },
+            bindable: true,
+            defaultValue: 'chips',
+            section: 'settings',
+            /* wwEditor:start */
+            bindingValidation: {
+                type: 'string',
+                tooltip: 'A string value, either "chips" or "count"',
+            },
+            propertyHelp: {
+                tooltip: 'Choose how to display selected items in multi-select mode.\nPossible values: chips, count',
+            },
+            /* wwEditor:end */
+            hidden: content => content.selectType !== 'multiple',
+        },
+        displayText: {
+            label: 'Display text',
+            type: 'Text',
+            defaultValue: { en: 'Selected: {count}' },
+            section: 'settings',
+            states: true,
+            bindable: true,
+            responsive: true,
+            multiLang: true,
+            /* wwEditor:start */
+            bindingValidation: {
+                type: 'string',
+                tooltip: 'A string value with {count} placeholder: "Selected: {count}"',
+            },
+            propertyHelp: {
+                tooltip: 'The text to display when using count mode. Use {count} as a placeholder for the number of selected items.',
+            },
+            /* wwEditor:end */
+            hidden: content => content.selectType !== 'multiple' || content.displayMode !== 'count',
         },
         disabled: {
             label: { en: 'Disabled' },

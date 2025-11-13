@@ -1093,7 +1093,7 @@ export default {
             propertyHelp: {
                 tooltip: 'When enabled, selected options will be sorted to the top of the list.',
             },
-            /* wwEditor:end */
+            /* wwEditor:end .*/
         },
         unselectOnClick: {
             label: { en: 'Unselect on click' },

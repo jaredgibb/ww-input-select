@@ -489,7 +489,9 @@ export default {
         }
 
         function closeDropdown() {
-            console.log('[Select] closeDropdown called, shouldClose:', shouldCloseDropdown.value, 'stack:', new Error().stack);
+            const stack = new Error().stack;
+            const caller = stack.split('\n')[2]?.trim(); // Get the calling line
+            console.log('[Select] closeDropdown called from:', caller, 'shouldClose:', shouldCloseDropdown.value);
             if (!shouldCloseDropdown.value) return;
 
             resetSearch();

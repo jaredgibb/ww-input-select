@@ -275,11 +275,14 @@ export default {
         );
 
         const handleClick = () => {
+            const unselectOnClick = props.content.unselectOnClick ?? false;
+            const selectOnClick = props.content.selectOnClick ?? true;
+            
             console.log('[Option] handleClick:', {
                 isSelected: isSelected.value,
                 canInteract: canInteract.value,
-                unselectOnClick: props.content.unselectOnClick,
-                selectOnClick: props.content.selectOnClick,
+                unselectOnClick: unselectOnClick,
+                selectOnClick: selectOnClick,
                 isEditing: isEditing.value,
                 isDisabled: isDisabled.value,
                 isOptionDisabled: isOptionDisabled.value,
@@ -287,11 +290,11 @@ export default {
                 value: value.value
             });
             
-            if (isSelected.value && canInteract.value && props.content.unselectOnClick) {
+            if (isSelected.value && canInteract.value && unselectOnClick) {
                 console.log('[Option] Unselecting...');
                 unselect();
                 focusFromOptionId(null);
-            } else if (!isSelected.value && canInteract.value && props.content.selectOnClick) {
+            } else if (!isSelected.value && canInteract.value && selectOnClick) {
                 console.log('[Option] Selecting...');
                 updateValue(value.value);
                 focusFromOptionId(optionId);

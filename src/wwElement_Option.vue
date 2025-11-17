@@ -277,12 +277,14 @@ export default {
         const handleClick = () => {
             const unselectOnClick = props.content.unselectOnClick ?? false;
             const selectOnClick = props.content.selectOnClick ?? true;
+            const sortSelectedToTop = props.content.sortSelectedToTop ?? false;
             
             console.log('[Option] handleClick:', {
                 isSelected: isSelected.value,
                 canInteract: canInteract.value,
                 unselectOnClick: unselectOnClick,
                 selectOnClick: selectOnClick,
+                sortSelectedToTop: sortSelectedToTop,
                 isEditing: isEditing.value,
                 isDisabled: isDisabled.value,
                 isOptionDisabled: isOptionDisabled.value,
@@ -290,7 +292,12 @@ export default {
                 value: value.value
             });
             
-            if (isSelected.value && canInteract.value && unselectOnClick) {
+            // Allow unselecting if either:
+            // 1. unselectOnClick is explicitly enabled, OR
+            // 2. sortSelectedToTop is enabled (natural UX for sorted items)
+            const canUnselect = unselectOnClick || sortSelectedToTop;
+            
+            if (isSelected.value && canInteract.value && canUnselect) {
                 console.log('[Option] Unselecting...');
                 unselect();
                 focusFromOptionId(null);

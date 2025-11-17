@@ -286,10 +286,12 @@ export default {
 
         // Methods
         const registerOption = (id, option) => {
+            console.log('[Select] registerOption called for id:', id, 'option:', option);
             optionsMap.value.set(id, option);
         };
 
         const unregisterOption = id => {
+            console.log('[Select] unregisterOption called for id:', id);
             optionsMap.value.delete(id);
         };
 

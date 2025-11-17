@@ -275,13 +275,29 @@ export default {
         );
 
         const handleClick = () => {
+            console.log('[Option] handleClick:', {
+                isSelected: isSelected.value,
+                canInteract: canInteract.value,
+                unselectOnClick: props.content.unselectOnClick,
+                selectOnClick: props.content.selectOnClick,
+                isEditing: isEditing.value,
+                isDisabled: isDisabled.value,
+                isOptionDisabled: isOptionDisabled.value,
+                isReadonly: isReadonly.value,
+                value: value.value
+            });
+            
             if (isSelected.value && canInteract.value && props.content.unselectOnClick) {
+                console.log('[Option] Unselecting...');
                 unselect();
                 focusFromOptionId(null);
             } else if (!isSelected.value && canInteract.value && props.content.selectOnClick) {
+                console.log('[Option] Selecting...');
                 updateValue(value.value);
                 focusFromOptionId(optionId);
                 focusSelectElement();
+            } else {
+                console.log('[Option] No action taken');
             }
         };
 

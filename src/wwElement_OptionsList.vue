@@ -162,15 +162,26 @@ export default {
         const { resolveMappingFormula } = wwLib.wwFormula.useFormula();
 
         const filteredOptions = computed(() => {
+            console.log('[OptionsList] filteredOptions computing...', {
+                hasSearch: searchState.value && searchState.value.value,
+                searchValue: searchState.value?.value,
+                optionsCount: options.value?.length,
+                sortEnabled: props.content.sortSelectedToTop,
+                hasSelectedValue: selectedValue.value != null
+            });
+            
             let filtered = options.value;
             
             // Apply search filter if active
             if (searchState.value && searchState.value.value) {
+                console.log('[OptionsList] Applying search filter');
                 filtered = memoizedFilter(options.value, searchState.value.value);
+                console.log('[OptionsList] Search filtered count:', filtered.length);
             }
             
             // Apply sorting if sortSelectedToTop is enabled
             if (props.content.sortSelectedToTop && selectedValue.value != null) {
+                console.log('[OptionsList] Starting sort operation');
                 try {
                     isSorting.value = true;
                     
@@ -207,6 +218,8 @@ export default {
                         return 0; // Keep original order for items with same selection status
                     });
                     
+                    console.log('[OptionsList] Sort complete');
+                    
                     // Reset the flag after a brief delay to allow DOM to update
                     setTimeout(() => {
                         isSorting.value = false;
@@ -219,6 +232,7 @@ export default {
                 }
             }
             
+            console.log('[OptionsList] filteredOptions complete, count:', filtered.length);
             return filtered;
         });
 
@@ -251,14 +265,25 @@ export default {
         // Watch for search changes only, not sorting changes
         // We need to track the actual filtering, not the sorting
         const searchFilteredCount = computed(() => {
+            console.log('[OptionsList] searchFilteredCount computing');
             if (!searchState.value || !searchState.value.value) return options.value.length;
-            return memoizedFilter(options.value, searchState.value.value).length;
+            const count = memoizedFilter(options.value, searchState.value.value).length;
+            console.log('[OptionsList] searchFilteredCount result:', count);
+            return count;
         });
 
         watch([searchState, searchFilteredCount], () => {
+            console.log('[OptionsList] searchState watcher triggered', {
+                hasSearchValue: searchState.value && searchState.value.value,
+                searchValue: searchState.value?.value,
+                filteredCount: searchFilteredCount.value
+            });
+            
             if (updateSearch && searchState.value && searchState.value.value) {
+                console.log('[OptionsList] Calling updateSearch');
                 const searchMatches = memoizedFilter(options.value, searchState.value.value);
                 updateSearch({ ...searchState.value, searchMatches });
+                console.log('[OptionsList] updateSearch complete');
             }
         }, { deep: true });
 

@@ -272,20 +272,27 @@ export default {
             return count;
         });
 
-        watch([searchState, searchFilteredCount], () => {
-            console.log('[OptionsList] searchState watcher triggered', {
-                hasSearchValue: searchState.value && searchState.value.value,
-                searchValue: searchState.value?.value,
-                filteredCount: searchFilteredCount.value
+        // Only update search matches when the search value changes, not when matches change
+        // This prevents infinite loops
+        let lastSearchValue = null;
+        watch(() => searchState.value?.value, (newSearchValue) => {
+            console.log('[OptionsList] searchValue watcher triggered', {
+                newSearchValue,
+                lastSearchValue,
+                hasChanged: newSearchValue !== lastSearchValue
             });
             
-            if (updateSearch && searchState.value && searchState.value.value) {
+            if (updateSearch && newSearchValue && newSearchValue !== lastSearchValue) {
                 console.log('[OptionsList] Calling updateSearch');
-                const searchMatches = memoizedFilter(options.value, searchState.value.value);
+                const searchMatches = memoizedFilter(options.value, newSearchValue);
                 updateSearch({ ...searchState.value, searchMatches });
+                lastSearchValue = newSearchValue;
                 console.log('[OptionsList] updateSearch complete');
+            } else if (!newSearchValue) {
+                // Reset when search is cleared
+                lastSearchValue = null;
             }
-        }, { deep: true });
+        });
 
         // Styles
         const scrollerStyle = computed(() => {

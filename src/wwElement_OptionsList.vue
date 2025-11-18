@@ -262,37 +262,8 @@ export default {
             });
         });
 
-        // Watch for search changes only, not sorting changes
-        // We need to track the actual filtering, not the sorting
-        const searchFilteredCount = computed(() => {
-            console.log('[OptionsList] searchFilteredCount computing');
-            if (!searchState.value || !searchState.value.value) return options.value.length;
-            const count = memoizedFilter(options.value, searchState.value.value).length;
-            console.log('[OptionsList] searchFilteredCount result:', count);
-            return count;
-        });
-
-        // Only update search matches when the search value changes, not when matches change
-        // This prevents infinite loops
-        let lastSearchValue = null;
-        watch(() => searchState.value?.value, (newSearchValue) => {
-            console.log('[OptionsList] searchValue watcher triggered', {
-                newSearchValue,
-                lastSearchValue,
-                hasChanged: newSearchValue !== lastSearchValue
-            });
-            
-            if (updateSearch && newSearchValue && newSearchValue !== lastSearchValue) {
-                console.log('[OptionsList] Calling updateSearch');
-                const searchMatches = memoizedFilter(options.value, newSearchValue);
-                updateSearch({ ...searchState.value, searchMatches });
-                lastSearchValue = newSearchValue;
-                console.log('[OptionsList] updateSearch complete');
-            } else if (!newSearchValue) {
-                // Reset when search is cleared
-                lastSearchValue = null;
-            }
-        });
+        // searchFilteredCount is NOT used anymore - removed to prevent infinite loop
+        // The Search component handles updating searchMatches directly
 
         // Styles
         const scrollerStyle = computed(() => {

@@ -35,6 +35,9 @@ export default {
             '_wwSelect:useSearch',
             {}
         );
+        const rawData = inject('_wwSelect:rawData', ref([]));
+        const searchState = inject('_wwSelect:searchState', ref(null));
+        
         const searchElementRef = ref(null);
         const searchElement = computed(() => searchElementRef.value);
         const searchBy = computed(() => {
@@ -43,13 +46,62 @@ export default {
                 .map(item => JSON.parse(item.filter.replace(/'/g, '"')))
                 .flat();
         });
+        
+        const options = computed(() => {
+            const items = rawData.value;
+            return Array.isArray(items) ? items : [];
+        });
+
+        // Helper function to filter options based on search value
+        const filterOptions = (options, filterValue) => {
+            if (!filterValue) return options;
+            
+            return options.filter(option => {
+                // Handle primitive values directly
+                const isPrimitive = typeof option !== 'object' || option === null;
+                if (isPrimitive) {
+                    const normalizedOption = option
+                        .toString()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .toLowerCase();
+                    const normalizedFilter = filterValue
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .toLowerCase();
+                    return normalizedOption.includes(normalizedFilter);
+                } else {
+                    // For objects, use the existing search logic
+                    const searchByFields = searchState.value?.searchBy?.length
+                        ? searchState.value?.searchBy
+                        : Object.keys(option);
+                    return searchByFields.some(key => {
+                        const optionValue = option[key];
+                        if (!optionValue) return false;
+                        const normalizedOption = optionValue
+                            .toString()
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .toLowerCase();
+                        const normalizedFilter = filterValue
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '')
+                            .toLowerCase();
+
+                        return normalizedOption.includes(normalizedFilter);
+                    });
+                }
+            });
+        };
 
         const debouncedUpdateSearch = debounce((value, searchBy) => {
             console.log('[Search] debouncedUpdateSearch called:', { value, searchBy });
             if (updateSearch) {
                 console.log('[Search] Calling updateSearch');
-                updateSearch({ value, searchBy });
-                console.log('[Search] updateSearch complete');
+                // Compute searchMatches here in the Search component
+                const searchMatches = value ? filterOptions(options.value, value) : [];
+                updateSearch({ value, searchBy, searchMatches });
+                console.log('[Search] updateSearch complete, matches:', searchMatches.length);
             }
         }, 300);
 

@@ -45,7 +45,12 @@ export default {
         });
 
         const debouncedUpdateSearch = debounce((value, searchBy) => {
-            if (updateSearch) updateSearch({ value, searchBy });
+            console.log('[Search] debouncedUpdateSearch called:', { value, searchBy });
+            if (updateSearch) {
+                console.log('[Search] Calling updateSearch');
+                updateSearch({ value, searchBy });
+                console.log('[Search] updateSearch complete');
+            }
         }, 300);
 
         const searchStyles = computed(() => {
@@ -85,7 +90,9 @@ export default {
 
         // This event come from ww-input-basic => https://github.com/weweb-assets/ww-input-basic
         const handleInputChange = event => {
+            console.log('[Search] handleInputChange called:', event?.target?.value);
             debouncedUpdateSearch(event?.target?.value, searchBy);
+            console.log('[Search] handleInputChange - debounced update queued');
         };
 
         const handleSearchFocus = () => {

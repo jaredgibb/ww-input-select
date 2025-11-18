@@ -95,13 +95,10 @@ export default {
         };
 
         const debouncedUpdateSearch = debounce((value, searchBy) => {
-            console.log('[Search] debouncedUpdateSearch called:', { value, searchBy });
             if (updateSearch) {
-                console.log('[Search] Calling updateSearch');
                 // Compute searchMatches here in the Search component
                 const searchMatches = value ? filterOptions(options.value, value) : [];
                 updateSearch({ value, searchBy, searchMatches });
-                console.log('[Search] updateSearch complete, matches:', searchMatches.length);
             }
         }, 300);
 
@@ -142,9 +139,7 @@ export default {
 
         // This event come from ww-input-basic => https://github.com/weweb-assets/ww-input-basic
         const handleInputChange = event => {
-            console.log('[Search] handleInputChange called:', event?.target?.value);
             debouncedUpdateSearch(event?.target?.value, searchBy);
-            console.log('[Search] handleInputChange - debounced update queued');
         };
 
         const handleSearchFocus = () => {
@@ -160,16 +155,13 @@ export default {
         });
 
         onMounted(() => {
-            console.log('[Search] Component mounted');
             if (updateHasSearch) updateHasSearch(true);
             if (updateSearch) {
-                console.log('[Search] Initializing search with empty value');
                 updateSearch({ value: '', searchBy, searchMatches: [] });
             }
         });
 
         onBeforeUnmount(() => {
-            console.log('[Search] Component unmounting');
             if (updateHasSearch) updateHasSearch(false);
         });
 

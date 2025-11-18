@@ -194,29 +194,6 @@ export default {
         const showSearch = computed(() => props.content.showSearch);
         const allowScrollingWhenOpen = computed(() => props.content.allowScrollingWhenOpen);
 
-        // Debug: Watch isOpen changes
-        watch(isOpen, (newVal, oldVal) => {
-            console.log('[Select] isOpen changed:', { from: oldVal, to: newVal, stack: new Error().stack });
-        });
-
-        // Debug: Watch sortSelectedToTop prop
-        watch(() => props.content.sortSelectedToTop, (newVal, oldVal) => {
-            console.log('[Select] sortSelectedToTop changed:', { from: oldVal, to: newVal });
-        });
-
-        // Debug: Watch props.content reference
-        watch(() => props.content, (newVal, oldVal) => {
-            console.log('[Select] props.content reference changed:', { 
-                same: newVal === oldVal,
-                initialState: newVal.initialState 
-            });
-        });
-
-        // Debug: Watch initialState
-        watch(initialState, (newVal, oldVal) => {
-            console.log('[Select] initialState changed:', { from: oldVal, to: newVal });
-        });
-
         // Styles
         const syncFloating = () => {
             if (!triggerElement?.value) return;
@@ -286,12 +263,10 @@ export default {
 
         // Methods
         const registerOption = (id, option) => {
-            console.log('[Select] registerOption called for id:', id, 'option:', option);
             optionsMap.value.set(id, option);
         };
 
         const unregisterOption = id => {
-            console.log('[Select] unregisterOption called for id:', id);
             optionsMap.value.delete(id);
         };
 
@@ -340,7 +315,6 @@ export default {
         };
 
         const toggleValueAccessibility = value => {
-            console.log('[Select] toggleValueAccessibility called, value:', value, 'closeOnSelect:', props.content.closeOnSelect);
             // Don't process empty values
             if (value === '' || value == null || value === undefined) {
                 return;
@@ -492,9 +466,6 @@ export default {
         }
 
         function closeDropdown() {
-            const stack = new Error().stack;
-            const caller = stack.split('\n')[2]?.trim(); // Get the calling line
-            console.log('[Select] closeDropdown called from:', caller, 'shouldClose:', shouldCloseDropdown.value);
             if (!shouldCloseDropdown.value) return;
 
             resetSearch();
@@ -521,17 +492,6 @@ export default {
                 !isEditing.value &&
                 !isSorting.value &&
                 Date.now() > lastTriggeredComponentAction.value + 400;
-            
-            console.log('[Select] handleClickOutside:', {
-                shouldClose,
-                closeOnClickOutside: closeOnClickOutside.value,
-                isOpen: isOpen.value,
-                inTrigger: triggerElement.value?.contains(event.target),
-                inDropdown: dropdownElement.value?.contains(event.target),
-                isSorting: isSorting.value,
-                target: event.target,
-                dropdownElement: dropdownElement.value
-            });
             
             if (shouldClose) {
                 closeDropdown();

@@ -279,35 +279,18 @@ export default {
             const selectOnClick = props.content.selectOnClick ?? true;
             const sortSelectedToTop = props.content.sortSelectedToTop ?? false;
             
-            console.log('[Option] handleClick:', {
-                isSelected: isSelected.value,
-                canInteract: canInteract.value,
-                unselectOnClick: unselectOnClick,
-                selectOnClick: selectOnClick,
-                sortSelectedToTop: sortSelectedToTop,
-                isEditing: isEditing.value,
-                isDisabled: isDisabled.value,
-                isOptionDisabled: isOptionDisabled.value,
-                isReadonly: isReadonly.value,
-                value: value.value
-            });
-            
             // Allow unselecting if either:
             // 1. unselectOnClick is explicitly enabled, OR
             // 2. sortSelectedToTop is enabled (natural UX for sorted items)
             const canUnselect = unselectOnClick || sortSelectedToTop;
             
             if (isSelected.value && canInteract.value && canUnselect) {
-                console.log('[Option] Unselecting...');
                 unselect();
                 focusFromOptionId(null);
             } else if (!isSelected.value && canInteract.value && selectOnClick) {
-                console.log('[Option] Selecting...');
                 updateValue(value.value);
                 focusFromOptionId(optionId);
                 focusSelectElement();
-            } else {
-                console.log('[Option] No action taken');
             }
         };
 

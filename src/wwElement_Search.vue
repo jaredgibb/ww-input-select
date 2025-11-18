@@ -108,11 +108,16 @@ export default {
         });
 
         onMounted(() => {
+            console.log('[Search] Component mounted');
             if (updateHasSearch) updateHasSearch(true);
-            if (updateSearch) updateSearch({ value: '', searchBy, searchMatches: [] });
+            if (updateSearch) {
+                console.log('[Search] Initializing search with empty value');
+                updateSearch({ value: '', searchBy, searchMatches: [] });
+            }
         });
 
         onBeforeUnmount(() => {
+            console.log('[Search] Component unmounting');
             if (updateHasSearch) updateHasSearch(false);
         });
 
